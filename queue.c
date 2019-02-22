@@ -24,7 +24,7 @@
 */
 queue_t *q_new()
 {
-    queue_t *q = malloc(sizeof(queue_t));
+    queue_t *q = (queue_t *) malloc(sizeof(queue_t));
     /* What if malloc returned NULL? */
     if (q) {
         q->head = NULL;
@@ -40,17 +40,16 @@ void q_free(queue_t *q)
     /* How about freeing the list elements and the strings? */
     /* Free queue structure */
     list_ele_t *temp = NULL;
-    if (q) {
-        while (q->head != NULL) {
-            temp = q->head;
-            q->head = q->head->next;
-            free(temp->value);
-            free(temp);
-        }
-        free(q);
-    } else {
+    if (!q) {
         return;
     }
+    while (q->head != NULL) {
+        temp = q->head;
+        q->head = q->head->next;
+        free(temp->value);
+        free(temp);
+    }
+    free(q);
 }
 
 /*
@@ -74,8 +73,7 @@ bool q_insert_head(queue_t *q, char *s)
                 free(new_val);
             return false;
         }
-        memset(new_val, '\0', strlen(s) + 1);
-        memcpy(new_val, s, strlen(s));
+        sprintf(new_val, "%s", s);
         new_node->value = new_val;
         new_node->next = q->head;
         if (!q->head) {
@@ -112,8 +110,7 @@ bool q_insert_tail(queue_t *q, char *s)
                 free(new_val);
             return false;
         }
-        memset(new_val, '\0', strlen(s) + 1);
-        memcpy(new_val, s, strlen(s));
+        sprintf(new_val, "%s", s);
         new_node->value = new_val;
         new_node->next = NULL;
         if (!q->tail) {
@@ -142,8 +139,7 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
     if (q && q->head) {
         temp = q->head;
         if (sp) {
-            memset(sp, '\0', bufsize);
-            memcpy(sp, temp->value, bufsize - 1);
+            snprintf(sp, bufsize, "%s", temp->value);
         }
         q->head = q->head->next;
         if (temp->value)
