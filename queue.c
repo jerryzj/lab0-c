@@ -26,7 +26,11 @@ queue_t *q_new()
 {
     queue_t *q = malloc(sizeof(queue_t));
     /* What if malloc returned NULL? */
-    q->head = NULL;
+    if (q) {
+        q->head = NULL;
+        q->tail = NULL;
+        q->size = 0;
+    }
     return q;
 }
 
@@ -35,7 +39,18 @@ void q_free(queue_t *q)
 {
     /* How about freeing the list elements and the strings? */
     /* Free queue structure */
-    free(q);
+    list_ele_t *temp = NULL;
+    if (q) {
+        while (q->head != NULL) {
+            temp = q->head;
+            q->head = q->head->next;
+            free(temp->value);
+            free(temp);
+        }
+        free(q);
+    } else {
+        return;
+    }
 }
 
 /*
@@ -47,14 +62,30 @@ void q_free(queue_t *q)
  */
 bool q_insert_head(queue_t *q, char *s)
 {
-    list_ele_t *newh;
-    /* What should you do if the q is NULL? */
-    newh = malloc(sizeof(list_ele_t));
-    /* Don't forget to allocate space for the string and copy it */
-    /* What if either call to malloc returns NULL? */
-    newh->next = q->head;
-    q->head = newh;
-    return true;
+    list_ele_t *new_node = NULL;
+    char *new_val = NULL;
+    if (q) {
+        new_node = (list_ele_t *) malloc(sizeof(list_ele_t));
+        new_val = (char *) malloc((strlen(s) + 1) * sizeof(char));
+        if (!new_node || !new_val) {
+            if (new_node)
+                free(new_node);
+            if (new_val)
+                free(new_val);
+            return false;
+        }
+        memset(new_val, '\0', strlen(s) + 1);
+        memcpy(new_val, s, strlen(s));
+        new_node->value = new_val;
+        new_node->next = q->head;
+        if (!q->head) {
+            q->tail = new_node;
+        }
+        q->head = new_node;
+        ++q->size;
+        return true;
+    }
+    return false;
 }
 
 
@@ -69,6 +100,31 @@ bool q_insert_tail(queue_t *q, char *s)
 {
     /* You need to write the complete code for this function */
     /* Remember: It should operate in O(1) time */
+    list_ele_t *new_node = NULL;
+    char *new_val = NULL;
+    if (q) {
+        new_node = (list_ele_t *) malloc(sizeof(list_ele_t));
+        new_val = (char *) malloc((strlen(s) + 1) * sizeof(char));
+        if (!new_node || !new_val) {
+            if (new_node)
+                free(new_node);
+            if (new_val)
+                free(new_val);
+            return false;
+        }
+        memset(new_val, '\0', strlen(s) + 1);
+        memcpy(new_val, s, strlen(s));
+        new_node->value = new_val;
+        new_node->next = NULL;
+        if (!q->tail) {
+            q->head = new_node;
+            q->tail = new_node;
+        }
+        q->tail->next = new_node;
+        q->tail = new_node;
+        ++q->size;
+        return true;
+    }
     return false;
 }
 
@@ -82,9 +138,23 @@ bool q_insert_tail(queue_t *q, char *s)
 */
 bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
 {
-    /* You need to fix up this code. */
-    q->head = q->head->next;
-    return true;
+    list_ele_t *temp = NULL;
+    if (q && q->head) {
+        temp = q->head;
+        if (sp) {
+            memset(sp, '\0', bufsize);
+            memcpy(sp, temp->value, bufsize - 1);
+        }
+        q->head = q->head->next;
+        if (temp->value)
+            free(temp->value);
+        if (temp)
+            free(temp);
+        --q->size;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 /*
@@ -95,7 +165,11 @@ int q_size(queue_t *q)
 {
     /* You need to write the code for this function */
     /* Remember: It should operate in O(1) time */
-    return 0;
+    if (q) {
+        return q->size;
+    } else {
+        return 0;
+    }
 }
 
 /*
@@ -107,5 +181,21 @@ int q_size(queue_t *q)
  */
 void q_reverse(queue_t *q)
 {
-    /* You need to write the code for this function */
+    list_ele_t *forward = NULL;
+    list_ele_t *backward = NULL;
+    if (q && q->head && q->head->next) {
+        backward = q->head;
+        q->tail = q->head;
+        q->head = q->head->next;
+        forward = q->head->next;
+        backward->next = NULL;
+        while (forward != NULL) {
+            q->head->next = backward;
+            backward = q->head;
+            q->head = forward;
+            forward = forward->next;
+        }
+        q->head->next = backward;
+    } else
+        return;
 }
