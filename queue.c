@@ -63,7 +63,9 @@ bool q_insert_head(queue_t *q, char *s)
 {
     list_ele_t *new_node = NULL;
     char *new_val = NULL;
-    if (q) {
+    if (!q) {
+        return false;
+    } else {
         new_node = (list_ele_t *) malloc(sizeof(list_ele_t));
         new_val = (char *) malloc((strlen(s) + 1) * sizeof(char));
         if (!new_node || !new_val) {
@@ -83,7 +85,6 @@ bool q_insert_head(queue_t *q, char *s)
         ++q->size;
         return true;
     }
-    return false;
 }
 
 
@@ -100,7 +101,9 @@ bool q_insert_tail(queue_t *q, char *s)
     /* Remember: It should operate in O(1) time */
     list_ele_t *new_node = NULL;
     char *new_val = NULL;
-    if (q) {
+    if (!q) {
+        return false;
+    } else {
         new_node = (list_ele_t *) malloc(sizeof(list_ele_t));
         new_val = (char *) malloc((strlen(s) + 1) * sizeof(char));
         if (!new_node || !new_val) {
@@ -122,7 +125,6 @@ bool q_insert_tail(queue_t *q, char *s)
         ++q->size;
         return true;
     }
-    return false;
 }
 
 /*
